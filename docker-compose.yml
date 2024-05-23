@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:3000"
     environment:
       - CONFIG_PATH=/code/Cargo.toml
     volumes:
