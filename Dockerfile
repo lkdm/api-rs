@@ -1,18 +1,8 @@
-ARG RUST_VERSION=1.75.0
-
-FROM rust:${RUST_VERSION}-slim-bookworm AS builder
-WORKDIR /app
+FROM rust:1.78.0 AS builder
 COPY . .
-RUN \
-  --mount=type=cache,target=/app/target/ \
-  --mount=type=cache,target=/usr/local/cargo/registry/ \
-  cargo build --release && \
-  cp ./target/release/api /
+RUN cargo build --release
 
-
-FROM debian:bookworm-slim AS final
-COPY --from=builder /api /usr/local/bin
-COPY --from=builder /app/config /opt/api/config
-WORKDIR /opt/api
-ENTRYPOINT ["api"]
+FROM debian:bookworm-slim
+COPY --from=builder ./target/release/api ./target/release/api
+CMD ["/target/release/api"]
 EXPOSE 8080
