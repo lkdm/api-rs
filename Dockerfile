@@ -1,13 +1,18 @@
-FROM rust:1.78.0-slim-buster AS base
+ARG RUST_VERSION=1.75.0
 
-# Set the working directory
-WORKDIR /code
-RUN cargo init
-COPY Cargo.toml /code/Cargo.toml
-RUN cargo fetch
-COPY . /code
+FROM rust:${RUST_VERSION}-slim-bookworm AS builder
+WORKDIR /app
+COPY . .
+RUN \
+  --mount=type=cache,target=/app/target/ \
+  --mount=type=cache,target=/usr/local/cargo/registry/ \
+  cargo build --release && \
+  cp ./target/release/api /
 
-# Expose the port the application will run on
-EXPOSE 3000
 
-CMD [ "cargo", "run", "--offline" ]
+FROM debian:bookworm-slim AS final
+COPY --from=builder /api /usr/local/bin
+COPY --from=builder /app/config /opt/api/config
+WORKDIR /opt/api
+ENTRYPOINT ["api"]
+EXPOSE 8080
