@@ -33,6 +33,6 @@ pub async fn fallback(uri: axum::http::Uri) -> impl axum::response::IntoResponse
     )
 }
 
-async fn status() ->  Result<impl IntoResponse, StatusCode> {
+async fn status() -> Result<impl IntoResponse, StatusCode> {
     Ok("Ok!")
 }
