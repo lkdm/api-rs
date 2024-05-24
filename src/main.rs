@@ -20,7 +20,7 @@ async fn main() {
         .init();
 
     // "sqlite://sqlite.db";
-    let DATABASE_URL = env::var("DATABASE_URL").expect("DB_URL environment variable not set");
+    let DATABASE_URL = env::var("DATABASE_URL").expect("DATABASE_URL environment variable not set");
 
     // Check if the database exists, if not create it.
     if !Sqlite::database_exists(&DATABASE_URL)
@@ -48,7 +48,7 @@ async fn main() {
 
     // Azure specifies the port in the PORT environment variable.
     let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "3000".to_string())
+        .unwrap_or_else(|_| "8080".to_string())
         .parse::<u16>()
         .expect("PORT must be a valid u16");
 
