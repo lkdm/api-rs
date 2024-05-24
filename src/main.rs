@@ -1,9 +1,10 @@
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::Json;
-use serde_json::json;
+use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+const DB_URL: &str = "sqlite://sqlite.db";
 
 #[tokio::main]
 async fn main() {
@@ -12,11 +13,23 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    // TODO: Create connection pool here, to pass into app.
+    // Check if the database exists, if not create it.
+    if !Sqlite::database_exists(DB_URL).await.unwrap_or(false) {
+        println!("Creating database {}", DB_URL);
+        match Sqlite::create_database(DB_URL).await {
+            Ok(_) => println!("Create db success"),
+            Err(error) => panic!("error: {}", error),
+        }
+    } else {
+        println!("Database already exists");
+    }
+
+    let db = SqlitePool::connect(DB_URL).await.unwrap();
 
     let app = axum::Router::new()
         .fallback(fallback)
-        .route("/status/", get(status));
+        .route("/status/", get(status))
+        .with_state(db);
 
     // Azure specifies the port in the PORT environment variable.
     let port = std::env::var("PORT")
